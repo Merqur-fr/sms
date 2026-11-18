@@ -1,0 +1,75 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex, nofollow">
+<meta name="referrer" content="no-referrer">
+<title>SMS de rappel · Merqur</title>
+<!--
+  Ouvre l'app SMS du téléphone avec un numéro et un texte déjà remplis.
+  Lien : https://merqur-fr.github.io/sms/#<numéro encodé>/<texte encodé>
+  Le numéro et le texte sont après le « # » : le navigateur ne les envoie
+  jamais au serveur. Aucun script externe, aucun traceur, rien n'est stocké.
+-->
+<style>
+  :root { color-scheme: light dark; --bg: #f6f7f9; --fg: #1b1f24; --muted: #5b6470; --card: #fff; --accent: #0f766e; }
+  @media (prefers-color-scheme: dark) { :root { --bg: #111418; --fg: #e8eaed; --muted: #9aa3ad; --card: #1b2026; --accent: #2dd4bf; } }
+  body { margin: 0; font: 16px/1.5 system-ui, -apple-system, Segoe UI, Roboto, sans-serif; background: var(--bg); color: var(--fg); }
+  main { max-width: 520px; margin: 0 auto; padding: 32px 16px; }
+  .card { background: var(--card); border-radius: 14px; padding: 20px; box-shadow: 0 1px 3px rgba(0,0,0,.08); }
+  h1 { font-size: 20px; margin: 0 0 4px; }
+  p { color: var(--muted); margin: 0 0 16px; }
+  a.btn, button { display: block; width: 100%; box-sizing: border-box; text-align: center; padding: 14px; border-radius: 10px;
+    border: 0; font: inherit; font-weight: 600; text-decoration: none; cursor: pointer; margin-top: 10px; }
+  a.btn { background: var(--accent); color: #fff; }
+  button { background: transparent; color: var(--fg); border: 1px solid var(--muted); }
+  blockquote { margin: 16px 0 0; padding: 12px 14px; border-left: 3px solid var(--accent); background: var(--bg); border-radius: 6px; white-space: pre-wrap; }
+  .num { font-weight: 600; color: var(--fg); }
+</style>
+</head>
+<body>
+<main>
+  <div class="card">
+    <h1>SMS de rappel</h1>
+    <p id="info">Ouverture de l'application SMS…</p>
+    <a class="btn" id="open" href="#">Ouvrir l'application SMS</a>
+    <button id="copy" type="button">Copier le texte</button>
+    <blockquote id="text"></blockquote>
+  </div>
+</main>
+<script>
+  (function () {
+    var raw = location.hash.slice(1);
+    var cut = raw.indexOf("/");
+    var to = "", body = "";
+    try {
+      to = decodeURIComponent(cut < 0 ? raw : raw.slice(0, cut));
+      body = cut < 0 ? "" : decodeURIComponent(raw.slice(cut + 1));
+    } catch (e) { to = ""; }
+    var info = document.getElementById("info");
+    if (!/^\+?[0-9]{8,15}$/.test(to)) {
+      info.textContent = "Lien incomplet : numéro introuvable.";
+      document.getElementById("open").style.display = "none";
+      document.getElementById("copy").style.display = "none";
+      return;
+    }
+    // « ?&body= » : compris par l'iPhone et par Android.
+    var link = "sms:" + to + "?&body=" + encodeURIComponent(body);
+    document.getElementById("open").href = link;
+    document.getElementById("text").textContent = body;
+    info.textContent = "";
+    var label = document.createElement("span");
+    label.className = "num";
+    label.textContent = to;
+    info.append("Pour ", label, ". Si l'application ne s'ouvre pas, utilisez le bouton ou copiez le texte.");
+    document.getElementById("copy").onclick = function () {
+      navigator.clipboard.writeText(body).then(function () {
+        document.getElementById("copy").textContent = "Texte copié ✓";
+      });
+    };
+    location.href = link;
+  })();
+</script>
+</body>
+</html>
